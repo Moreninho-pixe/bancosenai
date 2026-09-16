@@ -80,10 +80,9 @@ namespace BancoSENAIAPI.Controllers
             }
 
             // R06F: Limite de Tamanho de Arquivo (máximo 2 MB)
-            long limiteMaximoBytes = 2 * 1024 * 1024;
-            if (arquivo.Length > limiteMaximoBytes)
+            if (arquivo.Length > 2 * 1024 * 1024)
             {
-                return BadRequest("Erro (R06F): O tamanho do arquivo excede o limite máximo permitido de 2 MB.");
+                return BadRequest("O arquivo não pode ter mais de 2 MB.");
             }
 
             // R06G: Validação de Extensões Permitidas (.pdf, .jpg, .png)
