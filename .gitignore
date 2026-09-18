@@ -1,0 +1,24 @@
+## Para o seu caso principal: Ignorar binários e builds
+[Db]in/
+[Oo]bj/
+
+## Arquivos gerados pelo Visual Studio e VS Code
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Ferramentas de Build e Publish
+.deploy/
+*.[Cc]ache
+_Chutzpah*
+
+
+
+## Arquivos de Log e Crash
+*.log
+*.apkg
+
+## macOS (caso alguém da equipe use Mac)
+.DS_Store
