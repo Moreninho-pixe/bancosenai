@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Agência - Banco SENAI</title>
+    <link rel="stylesheet" href="agencia.css">
+</head>
+<body>
+    <h1>Gestão de Agência</h1>
+
+    <!-- Área de Cadastro e Edição -->
+    <div class="form-container">
+        <input type="number" id="numAgencia" placeholder="Número da Agência">
+        <input type="text" id="cidade" placeholder="Cidade">
+        <input type="text" id="siglaEstado" placeholder="Sigla Estado (Ex: SE)">
+        <button id="btnSalvar" onclick="salvar()">Salvar</button>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <table id="tabelaAgencias">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Cidade</th>
+                <th>Estado</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabela">
+            <!-- Dados carregados via JS -->
+        </tbody>
+    </table>
+
+    <script src="agencia.js"></script>
+</body>
+</html>

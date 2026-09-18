@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Carteiras - Banco SENAI</title>
+    <link rel="stylesheet" href="carteira.css">
+</head>
+<body>
+    <h1>Gestão de Carteiras</h1>
+
+    <!-- Área de Cadastro e Edição -->
+    <div class="form-container">
+        <input type="number" id="numCarteira" placeholder="Número da Carteira">
+        <input type="text" id="nomeCarteira" placeholder="Nome da Carteira">
+        <!-- Uso de step para suporte a duas casas decimais conforme a regra de precisão -->
+        <input type="number" id="apetite" step="0.01" placeholder="Apetite (Ex: 0.50)">
+        <button id="btnSalvar" onclick="salvar()">Salvar</button>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <table id="tabelaCarteiras">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Nome</th>
+                <th>Apetite</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="corpoTabela">
+            <!-- Dados carregados via JS -->
+        </tbody>
+    </table>
+
+    <script src="carteira.js"></script>
+</body>
+</html>
