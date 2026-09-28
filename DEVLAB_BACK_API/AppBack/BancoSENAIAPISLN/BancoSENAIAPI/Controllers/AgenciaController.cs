@@ -15,7 +15,7 @@ namespace BancoSENAIAPI.Controllers
         };
 
         private readonly string _caminhoRaiz = Path.Combine(Directory.GetCurrentDirectory(), "ClienteArquivos");
-        private static List<Models.DocumentoMetadado> _documentosMetadados = new List<Models.DocumentoMetadado>();
+        private static List<Models.DocumentoMetadados> _documentosMetadados = new List<Models.DocumentoMetadados>();
         private static int _next = 1;
 
         [HttpGet]
@@ -112,11 +112,11 @@ namespace BancoSENAIAPI.Controllers
                 await arquivo.CopyToAsync(stream);
             }
 
-            var documentoMetadados = new Models.DocumentoMetadado
+            var documentoMetadados = new Models.DocumentoMetadados
             {
-                ID = _next++,
-                Name = nomeOriginal,
-                Extensão = extensao,
+                id = _next++,
+                name = nomeOriginal,
+                Extensao = extensao,
                 Caminho = caminhoFinal,
                 CodigoCliente = codigoCliente
             };
