@@ -1,5 +1,7 @@
 ﻿using BancoSENAIAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using BancoSENAIAPI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BancoSENAIAPI.Controllers
 {
@@ -7,137 +9,67 @@ namespace BancoSENAIAPI.Controllers
     [Route("api/v1/[controller]")]
     public class AgenciaController : ControllerBase
     {
-        private static List<Agencia> _agencias = new List<Agencia>
+        private readonly AppDbContext _context;
+        public AgenciaController(AppDbContext context)
         {
-            new Agencia { NumeroAgencia = 1001, Cidade = "Aracaju", SiglaEstado = "SE" },
-            new Agencia { NumeroAgencia = 2002, Cidade = "São Paulo", SiglaEstado = "SP" },
-            new Agencia { NumeroAgencia = 3003, Cidade = "Salvador", SiglaEstado = "BA" }
-        };
-
-        private readonly string _caminhoRaiz = Path.Combine(Directory.GetCurrentDirectory(), "ClienteArquivos");
-        private static List<Models.DocumentoMetadados> _documentosMetadados = new List<Models.DocumentoMetadados>();
-        private static int _next = 1;
+            _context = context;
+        }
 
         [HttpGet]
-        public IActionResult ListarTodas()
+        public async Task<IActionResult> ListarTodas()
         {
-            return Ok(_agencias);
+            var agencias = await _context.Agencia.ToListAsync();
+            return Ok(agencias);
         }
 
         [HttpPost]
-        public IActionResult Cadastrar([FromBody] Agencia novaAgencia)
+        public async Task<IActionResult> Cadastrar([FromBody] Agencia novaAgencia)
         {
-            if (_agencias.Any(a => a.NumeroAgencia == novaAgencia.NumeroAgencia))
+
+            if (await _context.Agencia.AnyAsync(a => a.NumeroAgencia == novaAgencia.NumeroAgencia))
                 return BadRequest(new { message = "Este número de agência já existe." });
 
-            _agencias.Add(novaAgencia);
+            _context.Agencia.Add(novaAgencia);
+            await _context.SaveChangesAsync();
+            // Retorna Status 201 Created conforme boas práticas REST [6, 8]
             return Created("", novaAgencia);
         }
 
         [HttpGet("{codigo}")]
-        public IActionResult ConsultarPorCodigo(int codigo)
+        public async Task<IActionResult> ConsultarPorCodigo(int codigo)
         {
-            var agencia = _agencias.FirstOrDefault(a => a.NumeroAgencia == codigo);
+            var agencia = await _context.Agencia.FirstOrDefaultAsync(a => a.NumeroAgencia == codigo);
 
             if (agencia == null)
-                return NotFound(new { message = "Agência não encontrada." });
+                return NotFound(new { message = "Agência não encontrada." }); // Status 404 [6, 7]
 
-            return Ok(agencia);
+            return Ok(agencia); // Status 200 OK [6, 7]
         }
 
         [HttpPut("{codigo}")]
-        public IActionResult Alterar(int codigo, [FromBody] Agencia agenciaAtualizada)
+        public async Task<IActionResult> Alterar(int codigo, [FromBody] Agencia agenciaAtualizada)
         {
-            var agenciaExistente = _agencias.FirstOrDefault(a => a.NumeroAgencia == codigo);
+            var agenciaExistente = await _context.Agencia.FirstOrDefaultAsync(a => a.NumeroAgencia == codigo);
 
             if (agenciaExistente == null) return NotFound();
 
             agenciaExistente.Cidade = agenciaAtualizada.Cidade;
             agenciaExistente.SiglaEstado = agenciaAtualizada.SiglaEstado;
+            await _context.SaveChangesAsync();
 
+            // Retorna Status 204 No Content para atualizações bem-sucedidas [6, 9]
             return NoContent();
         }
 
         [HttpDelete("{codigo}")]
-        public IActionResult Excluir(int codigo)
+        public async Task<IActionResult> Excluir(int codigo)
         {
-            var agencia = _agencias.FirstOrDefault(a => a.NumeroAgencia == codigo);
+            var agencia = await _context.Agencia.FirstOrDefaultAsync(a => a.NumeroAgencia == codigo);
 
             if (agencia == null) return NotFound();
 
-            _agencias.Remove(agencia);
-            return Ok(new { message = "Agência excluída com sucesso." });
-        }
-
-        // --- MÉTODOS DE UPLOAD E VALIDAÇÃO DE ARQUIVOS (R06F e R06G) ---
-
-        [HttpPost("upload/{codigoCliente}")]
-        public async Task<IActionResult> AnexarArquivo(int codigoCliente, IFormFile arquivo)
-        {
-            if (arquivo == null || arquivo.Length == 0)
-            {
-                return BadRequest("Nenhum arquivo foi enviado.");
-            }
-
-            // R06F: Limite de Tamanho de Arquivo (máximo 2 MB)
-            if (arquivo.Length > 2 * 1024 * 1024)
-            {
-                return BadRequest("O arquivo não pode ter mais de 2 MB.");
-            }
-
-            // R06G: Validação de Extensões Permitidas (.pdf, .jpg, .png)
-            string[] extensoesPermitidas = { ".pdf", ".jpg", ".jpeg", ".png" };
-            string extensaoArquivo = Path.GetExtension(arquivo.FileName).ToLowerInvariant();
-
-            if (!extensoesPermitidas.Contains(extensaoArquivo))
-            {
-                return BadRequest("Erro (R06G): Extensão de arquivo não permitida. Envie apenas arquivos .pdf, .jpg ou .png.");
-            }
-
-            // Processamento e salvamento do arquivo
-            string pastaCliente = Path.Combine(_caminhoRaiz, codigoCliente.ToString());
-
-            if (!Directory.Exists(pastaCliente))
-            {
-                Directory.CreateDirectory(pastaCliente);
-            }
-
-            string extensao = Path.GetExtension(arquivo.FileName);
-            string nomeOriginal = Path.GetFileNameWithoutExtension(arquivo.FileName);
-            string novoNome = $"{codigoCliente}_{nomeOriginal}_{Guid.NewGuid()}{extensao}";
-            string caminhoFinal = Path.Combine(pastaCliente, novoNome);
-
-            using (var stream = new FileStream(caminhoFinal, FileMode.Create))
-            {
-                await arquivo.CopyToAsync(stream);
-            }
-
-            var documentoMetadados = new Models.DocumentoMetadados
-            {
-                id = _next++,
-                name = nomeOriginal,
-                Extensao = extensao,
-                Caminho = caminhoFinal,
-                CodigoCliente = codigoCliente
-            };
-            _documentosMetadados.Add(documentoMetadados);
-
-            return Ok(new { mensagem = "Documento anexado com sucesso", arquivoSalvo = novoNome });
-        }
-
-        [HttpGet("listar-documentos/{codigoCliente}")]
-        public IActionResult ListarDocumentos(int codigoCliente)
-        {
-            var documentos = _documentosMetadados
-                .Where(d => d.CodigoCliente == codigoCliente)
-                .ToList();
-
-            if (!documentos.Any())
-            {
-                return NotFound("Nenhum documento encontrado para este cliente.");
-            }
-
-            return Ok(documentos);
+            _context.Agencia.Remove(agencia);
+            return Ok(new { message = "Agência excluída com sucesso." }); // Status 200 [6]
         }
     }
 }
