@@ -9,5 +9,6 @@ namespace BancoSENAIAPI.Data
 
         public DbSet<Agencia> Agencia => Set<Agencia>();
 
+        public DbSet<Usuario> Usuario => Set<Usuario>();
     }
 }

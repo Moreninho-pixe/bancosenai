@@ -2,13 +2,18 @@
 using Microsoft.AspNetCore.Mvc;
 using BancoSENAIAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BancoSENAIAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Authorize]
     public class AgenciaController : ControllerBase
     {
+        public static List<Agencia> agencias = new List<Agencia> { };
+       
+
         private readonly AppDbContext _context;
         public AgenciaController(AppDbContext context)
         {
